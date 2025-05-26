@@ -134,6 +134,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let sse_settings = SseServerSettings {
             bind_addr: format!("{}:{}", cli.sse_host, cli.sse_port).parse::<SocketAddr>()?,
             keep_alive: Some(Duration::from_secs(15)),
+            middlewares: None,
         };
 
         // Run SSE server

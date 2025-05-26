@@ -6,11 +6,13 @@ use rmcp::{
     model::{ClientCapabilities, ClientInfo},
     transport::{
         child_process::TokioChildProcess,
-        sse_server::{SseServer, SseServerConfig},
+        sse_server::{MiddlewareFn, SseServer, SseServerConfig},
     },
     ServiceExt,
 };
-use std::{collections::HashMap, error::Error as StdError, net::SocketAddr, time::Duration};
+use std::{
+    collections::HashMap, error::Error as StdError, net::SocketAddr, sync::Arc, time::Duration,
+};
 use tokio::process::Command;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -19,6 +21,7 @@ use tracing::info;
 pub struct SseServerSettings {
     pub bind_addr: SocketAddr,
     pub keep_alive: Option<Duration>,
+    pub middlewares: Option<Arc<Vec<MiddlewareFn>>>,
 }
 
 /// StdioServerParameters holds parameters for the stdio client.
@@ -47,6 +50,7 @@ pub async fn run_sse_server(
         post_path: "/message".to_string(),
         ct: CancellationToken::new(),
         // sse_keep_alive: sse_settings.keep_alive,
+        middlewares: sse_settings.middlewares,
     };
 
     let mut command = Command::new(&stdio_params.command);
