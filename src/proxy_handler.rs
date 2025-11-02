@@ -7,7 +7,7 @@ use rmcp::{
         PaginatedRequestParam, ServerInfo,
     },
     service::{NotificationContext, RequestContext, RunningService},
-    Error, RoleClient, RoleServer, ServerHandler,
+    ErrorData, RoleClient, RoleServer, ServerHandler,
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -31,7 +31,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: Option<PaginatedRequestParam>,
         _context: RequestContext<RoleServer>,
-    ) -> Result<ListToolsResult, Error> {
+    ) -> Result<ListToolsResult, ErrorData> {
         let client = self.client.clone();
         let guard = client.lock().await;
 
@@ -55,7 +55,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: CallToolRequestParam,
         _context: RequestContext<RoleServer>,
-    ) -> Result<CallToolResult, Error> {
+    ) -> Result<CallToolResult, ErrorData> {
         let client = self.client.clone();
         let guard = client.lock().await;
 
@@ -79,7 +79,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: Option<PaginatedRequestParam>,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::ListResourcesResult, Error> {
+    ) -> Result<rmcp::model::ListResourcesResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -112,7 +112,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: rmcp::model::ReadResourceRequestParam,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::ReadResourceResult, Error> {
+    ) -> Result<rmcp::model::ReadResourceResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -133,7 +133,7 @@ impl ServerHandler for ProxyHandler {
                     }
                     Err(err) => {
                         tracing::error!("Error reading resource: {:?}", err);
-                        Err(Error::internal_error(
+                        Err(ErrorData::internal_error(
                             format!("Error reading resource: {}", err),
                             None,
                         ))
@@ -143,7 +143,7 @@ impl ServerHandler for ProxyHandler {
             None => {
                 // Server doesn't support resources, return error
                 tracing::error!("Server doesn't support resources capability");
-                Err(Error::internal_error(
+                Err(ErrorData::internal_error(
                     "Server doesn't support resources capability".to_string(),
                     None,
                 ))
@@ -155,7 +155,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: Option<PaginatedRequestParam>,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::ListResourceTemplatesResult, Error> {
+    ) -> Result<rmcp::model::ListResourceTemplatesResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -188,7 +188,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: Option<PaginatedRequestParam>,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::ListPromptsResult, Error> {
+    ) -> Result<rmcp::model::ListPromptsResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -221,7 +221,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: rmcp::model::GetPromptRequestParam,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::GetPromptResult, Error> {
+    ) -> Result<rmcp::model::GetPromptResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -237,7 +237,7 @@ impl ServerHandler for ProxyHandler {
                     }
                     Err(err) => {
                         tracing::error!("Error getting prompt: {:?}", err);
-                        Err(Error::internal_error(
+                        Err(ErrorData::internal_error(
                             format!("Error getting prompt: {}", err),
                             None,
                         ))
@@ -247,7 +247,7 @@ impl ServerHandler for ProxyHandler {
             None => {
                 // Server doesn't support prompts, return error
                 tracing::error!("Server doesn't support prompts capability");
-                Err(Error::internal_error(
+                Err(ErrorData::internal_error(
                     "Server doesn't support prompts capability".to_string(),
                     None,
                 ))
@@ -259,7 +259,7 @@ impl ServerHandler for ProxyHandler {
         &self,
         request: rmcp::model::CompleteRequestParam,
         _context: RequestContext<RoleServer>,
-    ) -> Result<rmcp::model::CompleteResult, Error> {
+    ) -> Result<rmcp::model::CompleteResult, ErrorData> {
         // Get a lock on the client
         let client = self.client.clone();
         let guard = client.lock().await;
@@ -272,7 +272,7 @@ impl ServerHandler for ProxyHandler {
             }
             Err(err) => {
                 tracing::error!("Error completing: {:?}", err);
-                Err(Error::internal_error(
+                Err(ErrorData::internal_error(
                     format!("Error completing: {}", err),
                     None,
                 ))
@@ -328,6 +328,9 @@ impl ProxyHandler {
             server_info: Implementation {
                 name: peer_info_data.server_info.name.clone(),
                 version: peer_info_data.server_info.version.clone(),
+                title: peer_info_data.server_info.title.clone(),
+                icons: peer_info_data.server_info.icons.clone(),
+                website_url: peer_info_data.server_info.website_url.clone(),
             },
             instructions: peer_info_data.instructions.clone(),
             capabilities: peer_info_data.capabilities.clone(),
